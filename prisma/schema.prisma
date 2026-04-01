@@ -25,6 +25,9 @@ model Workout {
   date       DateTime @default(now())
   userId     Int
   exerciseId Int
+  reps       Int
+  sets       Int
+
   user       User     @relation(fields: [userId], references: [id])
   exercise   Exercise @relation(fields: [exerciseId], references: [id])
 }
