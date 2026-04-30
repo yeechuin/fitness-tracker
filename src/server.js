@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import exerciseRoutes from "./routes/exerciseRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import workoutRoutes from "./routes/workoutRoutes.js";
+import statsRoutes from "./routes/statsRoutes.js";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/exercises", exerciseRoutes(prisma));
 app.use("/users", userRoutes(prisma));
 app.use("/workouts", workoutRoutes(prisma));
+app.use("/stats", statsRoutes(prisma));
 
 const PORT = process.env.PORT || 5000;
 
