@@ -1,11 +1,13 @@
 import express from "express";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 export default (prisma) => {
   // Create workout
-  router.post("/", async (req, res) => {
+  router.post("/", authMiddleware, async (req, res) => {
     try {
-      const { userId, exerciseId, reps, sets } = req.body;
+      const { exerciseId, reps, sets } = req.body;
+      const userId = req.user.userId;
 
       if (!userId || !exerciseId) {
         return res
@@ -30,9 +32,9 @@ export default (prisma) => {
   });
 
   // Get all workouts (with relations 👇)
-  router.get("/", async (req, res) => {
+  router.get("/", authMiddleware, async (req, res) => {
     try {
-      const { userId } = req.query;
+      const userId = req.user.userId;
 
       const workouts = await prisma.workout.findMany({
         where: userId ? { userId: Number(userId) } : {}, // If userId is provided, filter by it
@@ -53,9 +55,9 @@ export default (prisma) => {
     }
   });
 
-  router.get("/stats", async (req, res) => {
+  router.get("/stats", authMiddleware, async (req, res) => {
     try {
-      const { userId } = req.query;
+      const userId = req.user.userId;
 
       // Dynamic query building for conditional filtering
       const where = userId ? { userId: Number(userId) } : {};

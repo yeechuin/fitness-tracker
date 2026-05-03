@@ -1,10 +1,13 @@
 import express from "express";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 export default (prisma) => {
-  router.get("/volume", async (req, res) => {
+  router.get("/volume", authMiddleware, async (req, res) => {
     try {
-      const { userId, period } = req.query;
+      const { period } = req.query;
+
+      const userId = req.user.userId;
 
       const timePeriod = period || "all";
 
@@ -132,7 +135,7 @@ export default (prisma) => {
       });
 
       const finalData = {
-        userName: workouts[0]?.user.name,
+        userName: workouts[0]?.user?.name || "Unknown User",
         volumeByExercise,
       };
 

@@ -5,6 +5,7 @@ import exerciseRoutes from "./routes/exerciseRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import workoutRoutes from "./routes/workoutRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ const prisma = new PrismaClient();
 
 app.use(express.json());
 // Use routes
+app.use("/auth", authRoutes(prisma));
 app.use("/exercises", exerciseRoutes(prisma));
 app.use("/users", userRoutes(prisma));
 app.use("/workouts", workoutRoutes(prisma));
