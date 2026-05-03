@@ -38,6 +38,28 @@ export default (prisma) => {
         return "all";
       }
 
+      function getPreviousTimeKey(date, period) {
+        const d = new Date(date);
+
+        if (period === "y") {
+          d.setFullYear(d.getFullYear() - 1);
+        }
+
+        if (period === "m") {
+          d.setMonth(d.getMonth() - 1);
+        }
+
+        if (period === "w") {
+          d.setDate(d.getDate() - 7);
+        }
+
+        return getTimeKey(d, period);
+      }
+
+      const now = new Date();
+      const currentPeriodKey = getTimeKey(now, timePeriod);
+      const previousPeriodKey = getPreviousTimeKey(now, timePeriod);
+
       const workouts = await prisma.workout.findMany({
         where: userId ? { userId: Number(userId) } : {},
         select: {
@@ -58,29 +80,56 @@ export default (prisma) => {
       });
 
       var volumeByExercise = [];
-      var volumeMap = {};
+      var volumeMap = {}; //current data
+      var previousMap = {}; //prev data for comparison
+      var prevVolumeByExercise = [];
+
       workouts.forEach((workout) => {
         const exerciseName = workout.exercise.name;
         const volume = workout.reps * workout.sets;
-        const timeKey = getTimeKey(workout.date, timePeriod);
 
-        if (!volumeMap[exerciseName]) {
-          volumeMap[exerciseName] = {};
+        const workoutKey = getTimeKey(workout.date, timePeriod);
+
+        if (workoutKey === currentPeriodKey) {
+          if (!volumeMap[exerciseName]) {
+            volumeMap[exerciseName] = 0;
+          }
+          volumeMap[exerciseName] += volume;
         }
 
-        if (!volumeMap[exerciseName][timeKey]) {
-          volumeMap[exerciseName][timeKey] = 0;
+        if (workoutKey === previousPeriodKey) {
+          if (!previousMap[exerciseName]) {
+            previousMap[exerciseName] = 0;
+          }
+          previousMap[exerciseName] += volume;
         }
-
-        volumeMap[exerciseName][timeKey] += volume;
       });
 
-      volumeByExercise = Object.entries(volumeMap).map(
-        ([exerciseName, timeData]) => ({
+      const allExercises = new Set([
+        ...Object.keys(volumeMap),
+        ...Object.keys(previousMap),
+      ]);
+
+      volumeByExercise = Array.from(allExercises).map((exerciseName) => {
+        const current = volumeMap[exerciseName] || 0; //find exercise volume for current period, default to 0 if not found
+        const previous = previousMap[exerciseName] || 0; //find exercise volume for previous period, default to 0 if not found
+
+        let changePercent = 0;
+
+        if (previous === 0) {
+          // handle edge cases to avoid division by zero
+          changePercent = current > 0 ? 100 : 0;
+        } else {
+          changePercent = ((current - previous) / previous) * 100;
+        }
+
+        return {
           exerciseName,
-          data: timeData,
-        }),
-      );
+          current,
+          previous,
+          changePercent,
+        };
+      });
 
       const finalData = {
         userName: workouts[0]?.user.name,
