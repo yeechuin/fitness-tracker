@@ -89,7 +89,11 @@ export default (prisma) => {
 
       workouts.forEach((workout) => {
         const exerciseName = workout.exercise.name;
-        const volume = workout.reps * workout.sets;
+        const baseVolume = workout.reps * workout.sets;
+
+        const hasWeight = workout.weight != null && workout.weight > 0;
+
+        const volume = hasWeight ? baseVolume * workout.weight : baseVolume;
 
         const workoutKey = getTimeKey(workout.date, timePeriod);
 
@@ -134,9 +138,71 @@ export default (prisma) => {
         };
       });
 
+      function generateInsights(volumeByExercise) {
+        const insights = [];
+
+        let strongest = null;
+        let weakest = null;
+        let totalCurrent = 0;
+        let totalPrevious = 0;
+
+        volumeByExercise.forEach((item) => {
+          const { exerciseName, current, previous, changePercent } = item;
+
+          totalCurrent += current;
+          totalPrevious += previous;
+
+          // track strongest
+          if (!strongest || current > strongest.current) {
+            strongest = item;
+          }
+
+          // track weakest (lowest current but > 0)
+          if (!weakest || current < weakest.current) {
+            weakest = item;
+          }
+
+          // improvement insight
+          if (changePercent > 20) {
+            insights.push(
+              `🔥 ${exerciseName} improved by ${changePercent.toFixed(1)}%`,
+            );
+          }
+
+          // drop insight
+          if (changePercent < -20) {
+            insights.push(
+              `⚠️ ${exerciseName} dropped by ${Math.abs(changePercent).toFixed(1)}%`,
+            );
+          }
+        });
+
+        if (strongest) {
+          insights.push(`💪 Strongest exercise: ${strongest.exerciseName}`);
+        }
+
+        if (weakest) {
+          insights.push(`📌 Weakest exercise: ${weakest.exerciseName}`);
+        }
+
+        const totalChange =
+          totalPrevious === 0
+            ? 100
+            : ((totalCurrent - totalPrevious) / totalPrevious) * 100;
+
+        insights.push(`📊 Total volume change: ${totalChange.toFixed(1)}%`);
+
+        return insights;
+      }
+
+      const insights = period
+        ? generateInsights(volumeByExercise)
+        : "no comparison insights available for All Time data";
+
       const finalData = {
         userName: workouts[0]?.user?.name || "Unknown User",
         volumeByExercise,
+        insights,
       };
 
       res.json(finalData);
