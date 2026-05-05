@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import workoutRoutes from "./routes/workoutRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import mealRoutes from "./routes/mealRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use("/exercises", exerciseRoutes(prisma));
 app.use("/users", userRoutes(prisma));
 app.use("/workouts", workoutRoutes(prisma));
 app.use("/stats", statsRoutes(prisma));
+app.use("/meals", mealRoutes(prisma));
 
 const PORT = process.env.PORT || 5000;
 
