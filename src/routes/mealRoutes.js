@@ -8,8 +8,12 @@ export default (prisma) => {
       const userId = req.user.userId;
       const { type, calories } = req.body;
 
-      if (!type) {
-        return res.status(400).json({ error: "No meal type specified." });
+      const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
+
+      const date = new Date();
+
+      if (!type || !MEAL_TYPES.includes(type)) {
+        return res.status(400).json({ error: "Invalid meal type specified." });
       }
 
       if (!calories || calories < 0) {
@@ -19,6 +23,7 @@ export default (prisma) => {
       const meal = await prisma.meal.create({
         data: {
           userId,
+          date,
           type,
           calories,
         },
