@@ -8,11 +8,13 @@ export default (prisma) => {
       const userId = req.user.userId;
       const { type, calories } = req.body;
 
+      const normalizedType = type.toLowerCase();
+
       const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
       const date = new Date();
 
-      if (!type || !MEAL_TYPES.includes(type)) {
+      if (!normalizedType || !MEAL_TYPES.includes(normalizedType)) {
         return res.status(400).json({ error: "Invalid meal type specified." });
       }
 
@@ -24,7 +26,7 @@ export default (prisma) => {
         data: {
           userId,
           date,
-          type,
+          type: normalizedType,
           calories,
         },
       });
