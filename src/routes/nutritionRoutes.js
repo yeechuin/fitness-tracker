@@ -1,11 +1,18 @@
 import express from "express";
 import { authMiddleware } from "../middleware/authMiddleware.js";
+import { calcBMR, calcTDEE } from "../utils/calcEnergy.js";
 const router = express.Router();
 
 export default (prisma) => {
   router.get("/daily", authMiddleware, async (req, res) => {
     try {
       const userId = req.user.userId;
+      const user = await prisma.user.findUnique({
+        where: { id: Number(userId) },
+      });
+      const bmr = calcBMR(user);
+      const tdee = bmr ? calcTDEE(bmr, "moderate") : null;
+
       const { date } = req.query;
       const targetDate = date ? new Date(date) : new Date();
 
@@ -56,29 +63,35 @@ export default (prisma) => {
 
       const mealResult = { breakfast, lunch, dinner, snack, total };
 
-      const goal = calorieGoal?.calorieGoal;
+      const goal = user?.calorieGoal ?? tdee ?? null;
 
       let remaining = null;
       let percentage = null;
       let status = null;
 
-      if (goal != null) {
+      if (goal) {
         remaining = goal - total;
         percentage = (total / goal) * 100;
 
-        if (percentage >= 100) {
-          status = "exceeded";
-        } else if (percentage >= 80) {
-          status = "warning";
-        } else {
-          status = "safe";
-        }
+        if (percentage >= 100) status = "exceeded";
+        else if (percentage >= 80) status = "warning";
+        else status = "safe";
       }
+
       const nutritionTotal = {
         userId,
         date: targetDate,
-        calorieGoal: calorieGoal.calorieGoal,
+
         calories: total,
+        calorieGoal: goal,
+
+        remaining,
+        percentage,
+        status,
+
+        bmr,
+        tdee,
+
         mealBreakdown: mealResult,
       };
 

@@ -8,6 +8,7 @@ import statsRoutes from "./routes/statsRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import mealRoutes from "./routes/mealRoutes.js";
 import nutritionRoutes from "./routes/nutritionRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use("/auth", authRoutes(prisma));
 app.use("/exercises", exerciseRoutes(prisma));
 app.use("/users", userRoutes(prisma));
+app.use("/profile", profileRoutes(prisma));
 app.use("/workouts", workoutRoutes(prisma));
 app.use("/stats", statsRoutes(prisma));
 app.use("/meals", mealRoutes(prisma));
