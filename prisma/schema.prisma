@@ -19,6 +19,7 @@ model User {
   weight Float?
   calorieGoal Int?
   meals        Meal[]
+  chatMessages ChatMessage[]
 }
 
 model Meal {
@@ -50,4 +51,14 @@ model Workout {
 
   user       User     @relation(fields: [userId], references: [id])
   exercise   Exercise @relation(fields: [exerciseId], references: [id])
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }

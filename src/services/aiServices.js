@@ -1,5 +1,5 @@
-export async function askAI(context) {
-  const { user, todayMeals, recentWorkouts, userMessage } = context;
+export async function askAI(prisma, context) {
+  const { user, todayMeals, recentWorkouts, userMessage, userId } = context;
 
   const userText = `
 User:
@@ -65,6 +65,14 @@ ${userMessage}
 
   const data = await response.json();
   const aiReply = data.choices?.[0]?.message?.content;
+
+  await prisma.chatMessage.create({
+    data: {
+      userId,
+      role: "assistant",
+      content: aiReply,
+    },
+  });
 
   return aiReply;
 }

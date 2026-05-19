@@ -9,15 +9,22 @@ export default (prisma) => {
       const { message } = req.body;
       const userId = req.user.userId;
 
+      await prisma.chatMessage.create({
+        data: {
+          userId,
+          role: "user",
+          content: message,
+        },
+      });
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
+
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
 
       const user = await prisma.user.findUnique({
-        where: {
-          id: Number(userId),
-        },
+        where: { id: Number(userId) },
         select: {
           age: true,
           weight: true,
@@ -31,44 +38,39 @@ export default (prisma) => {
       const todayMeals = await prisma.meal.findMany({
         where: {
           userId,
-          date: {
-            gte: startOfDay,
-            lte: endOfDay,
-          },
+          date: { gte: startOfDay, lte: endOfDay },
         },
       });
 
       const recentWorkouts = await prisma.workout.findMany({
-        where: {
-          userId: Number(userId),
-        },
+        where: { userId: Number(userId) },
         select: {
           reps: true,
           sets: true,
-          date: true,
-          exercise: {
-            select: {
-              name: true,
-            },
-          },
+          exercise: { select: { name: true } },
         },
-        orderBy: {
-          date: "desc",
-        },
+        orderBy: { date: "desc" },
         take: 5,
       });
 
-      const context = {
+      const history = await prisma.chatMessage.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      });
+
+      history.reverse();
+
+      const aiResponse = await askAI(prisma, {
+        userId,
         user,
         todayMeals,
         recentWorkouts,
-        userMessage: message,
-      };
-
-      const aiResponse = await askAI(context);
-      res.json({
-        reply: aiResponse,
+        history,
+        message,
       });
+
+      res.json({ reply: aiResponse });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to process message" });
