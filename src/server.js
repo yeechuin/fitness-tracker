@@ -1,5 +1,7 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
 import { PrismaClient } from "@prisma/client";
 import exerciseRoutes from "./routes/exerciseRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -9,8 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import mealRoutes from "./routes/mealRoutes.js";
 import nutritionRoutes from "./routes/nutritionRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
-
-dotenv.config();
+import aiRoutes from "./routes/aiRoutes.js";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -25,6 +26,7 @@ app.use("/workouts", workoutRoutes(prisma));
 app.use("/stats", statsRoutes(prisma));
 app.use("/meals", mealRoutes(prisma));
 app.use("/nutrition", nutritionRoutes(prisma));
+app.use("/ai", aiRoutes(prisma));
 
 const PORT = process.env.PORT || 5000;
 
