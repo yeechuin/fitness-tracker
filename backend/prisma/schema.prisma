@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  name     String?
+  password String
+  workouts Workout[]
+  gender String?
+  age Int?
+  height Float?
+  weight Float?
+  calorieGoal Int?
+  meals        Meal[]
+  chatMessages ChatMessage[]
+}
+
+model Meal {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+
+  type      String   // breakfast | lunch | dinner | snack
+  calories  Int
+  date      DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+model Exercise {
+  id        Int      @id @default(autoincrement())
+  name      String
+  workouts  Workout[]
+}
+
+model Workout {
+  id         Int      @id @default(autoincrement())
+  date       DateTime @default(now())
+  userId     Int
+  exerciseId Int
+  reps       Int
+  sets       Int
+
+  user       User     @relation(fields: [userId], references: [id])
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
