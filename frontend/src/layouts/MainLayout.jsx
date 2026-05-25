@@ -27,6 +27,10 @@ export default function MainLayout() {
         <NavLink to="/profile" className="hover:text-gray-300">
           Profile
         </NavLink>
+
+        <NavLink to="/login" className="hover:text-gray-300 mt-auto">
+          Login
+        </NavLink>
       </aside>
 
       {/* Main Content */}

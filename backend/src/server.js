@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-
+import cors from "cors";
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import exerciseRoutes from "./routes/exerciseRoutes.js";
@@ -16,7 +16,15 @@ import aiRoutes from "./routes/aiRoutes.js";
 const app = express();
 const prisma = new PrismaClient();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
+
 // Use routes
 app.use("/auth", authRoutes(prisma));
 app.use("/exercises", exerciseRoutes(prisma));
