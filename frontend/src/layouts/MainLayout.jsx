@@ -1,6 +1,17 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function MainLayout() {
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+  
   return (
     <div className="flex min-h-screen bg-gray-100">
       
@@ -28,9 +39,9 @@ export default function MainLayout() {
           Profile
         </NavLink>
 
-        <NavLink to="/login" className="hover:text-gray-300 mt-auto">
-          Login
-        </NavLink>
+        <button onClick={handleLogout} className="hover:text-gray-300 mt-auto">
+          Logout
+        </button>
       </aside>
 
       {/* Main Content */}

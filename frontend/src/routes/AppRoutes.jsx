@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import MainLayout from "../layouts/MainLayout";
+import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 import Dashboard from "../pages/Dashboard";
 import Nutrition from "../pages/Nutrition";
@@ -13,13 +15,20 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
 
-        <Route element={<MainLayout />}>
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/" element={<Dashboard />} />
           <Route path="/nutrition" element={<Nutrition />} />
           <Route path="/workouts" element={<Workouts />} />
           <Route path="/ai" element={<AIChat />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/login" element={<Login />} />
         </Route>
 
       </Routes>
